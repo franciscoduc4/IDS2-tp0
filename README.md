@@ -23,6 +23,7 @@ Antes de levantar el entorno de desarrollo, asegúrate de tener instalados los s
 - **Docker Compose**: Docker Compose 1.29 o superior
 
 ## Guía de Usuario
+Para el testing de la aplicación se ha utilizado la librería [pytest](https://docs.pytest.org/en/stable/). Puedes consultar la documentación completa de pytest en el siguiente [link](https://docs.pytest.org/en/stable/).
 
 ## Construcción de la Imagen Docker
 Para construir la imagen Docker del servicio, ejecuta el siguiente comando en la raíz del proyecto:
