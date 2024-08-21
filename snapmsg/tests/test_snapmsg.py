@@ -35,6 +35,14 @@ def test_create_snap():
     assert response.json()["data"]["message"] == "Hello, SnapMsg!"
 
 def test_get_snaps():
+    # Create a snap message
+    client.post("/snaps", json={"message": "Hello, SnapMsg!"})
+    
+    # Get all snap messages
     response = client.get("/snaps")
     assert response.status_code == 200
-    assert len(response.json()["data"]) > 0
+    
+    # Check if there is at least one snap message
+    data = response.json().get("data", [])
+    assert len(data) > 0
+    assert data[0]["message"] == "Hello, SnapMsg!"  
