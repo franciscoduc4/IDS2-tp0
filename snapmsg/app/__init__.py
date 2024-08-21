@@ -1,21 +1,19 @@
-from flask import Flask
+from fastapi import FastAPI
 from .config import DevelopmentConfig, ProductionConfig, TestingConfig
+from .models import create_tables, SessionLocal
+from .routes import router
 
-def create_app(config_class=DevelopmentConfig):
-    """Factory pattern for creating the Flask app."""
-    app = Flask(__name__)
-    
-    # Cargar la configuración
-    app.config.from_object(config_class)
-    
-    # Registro de Blueprints (rutas)
-    from .routes import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+app = FastAPI()
 
-    # BDD
-    # from .models import db
-    # db.init_app(app)
+# Initialize the database
+create_tables()
 
-    # Inicializar otras extensiones, middleware, etc.
-    
-    return app
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+app.include_router(router)
