@@ -32,7 +32,7 @@ def setup_and_teardown():
 def test_create_snap():
     response = client.post("/snaps", json={"message": "Hello, SnapMsg!"})
     assert response.status_code == 201
-    assert response.json()["data"]["message"] == "Hello, SnapMsg!"
+    assert response.json()["message"] == "Hello, SnapMsg!"
 
 def test_get_snaps():
     # Create a snap message
