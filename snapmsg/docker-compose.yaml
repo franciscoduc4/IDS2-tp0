@@ -1,30 +1,12 @@
+# docker-compose.yml
+
 version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        TESTING: "false"
+    build: .
+    ports:
+      - "8080:8080"
     environment:
       - ENVIRONMENT=development
-      - DATABASE_URL=sqlite:///./test_snapmsg.db
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/app
-    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-  test:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        TESTING: "true"
-    environment:
-      - ENVIRONMENT=testing
-      - DATABASE_URL=sqlite:///./test_snapmsg.db
-    command: ["pytest"]
-    volumes:
-      - .:/app
+      - PORT=8080

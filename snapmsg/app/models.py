@@ -1,25 +1,23 @@
-from sqlalchemy import Column, Integer, String, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
-from .config import Config
+# app/models.py
+# Estructura simple en memoria
+from typing import List, Optional
 
-# Use the database URL from the configuration
-engine = create_engine(Config.DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
-Base = declarative_base()
+class SnapMsg:
+    _id_counter = 1
 
-class SnapMsg(Base):
-    __tablename__ = "snaps"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    message = Column(String, index=True)
+    def __init__(self, message: str):
+        self.id = SnapMsg._id_counter
+        SnapMsg._id_counter += 1
+        self.message = message
 
-def create_tables():
-    Base.metadata.create_all(bind=engine)
+    @staticmethod
+    def get_all_snaps() -> List['SnapMsg']:
+        return SnapMsg._snaps
 
-def get_db():
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
+    @staticmethod
+    def add_snap(message: str) -> 'SnapMsg':
+        snap = SnapMsg(message)
+        SnapMsg._snaps.append(snap)
+        return snap
+
+    _snaps = []
