@@ -1,8 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-
 from app.routes import router
 from app.logging_config import setup_logging
 from app.config import Config
@@ -27,8 +26,26 @@ app.add_middleware(
 # Include routes
 app.include_router(router)
 
+@app.middleware("http")
+async def error_handling_middleware(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        # Handle error
+        return JSONResponse(
+            status_code=500,
+            content={
+                "type": "about:blank",
+                "title": "Internal Server Error",
+                "status": 500,
+                "detail": str(e),
+                "instance": str(request.url)
+            }
+        )
+
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
+async def validation_exception_handler(request: Request, exc):
     details = exc.errors()
     formatted_details = []
     for error in details:

@@ -83,3 +83,19 @@ async def test_create_snap_uuid_uniqueness(setup_db):
         data2 = response2.json()["data"]
 
         assert data1["uuid"] != data2["uuid"]
+
+
+@pytest.mark.asyncio
+async def test_delete_snap_by_id(setup_db):
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        create_response = await ac.post("/snaps", json={"message": "Test message"})
+        created_snap = create_response.json()["data"]
+        snap_id = created_snap["id"]
+
+        delete_response = await ac.delete(f"/snaps/{snap_id}")
+
+        assert delete_response.status_code == 204
+
+        # Verify the snap is deleted
+        get_response = await ac.get(f"/snaps/{snap_id}")
+        assert get_response.status_code == 404
