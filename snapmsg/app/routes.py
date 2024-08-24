@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from .schemas import SnapMsgCreate, SnapMsgBase, SnapMsgList, ErrorResponse, SnapMsgResponse
 from .database import SessionLocal, SnapMsg
 import logging
+from pydantic import ValidationError
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -22,14 +23,24 @@ def get_db():
 })
 async def create_snap(snap: SnapMsgCreate, db: Session = Depends(get_db)):
     try:
-        if not snap.message:
-            raise HTTPException(status_code=400, detail="Message cannot be empty")
-        
         new_snap = SnapMsg(message=snap.message)
         db.add(new_snap)
         db.commit()
         db.refresh(new_snap)
         return SnapMsgResponse(data=SnapMsgBase.from_orm(new_snap))  # Returns 201 by default due to the status_code above
+    
+    except ValidationError as e:
+        logger.error(f"Validation error: {e}")
+        return JSONResponse(
+            status_code=400,
+            content=ErrorResponse(
+                type="about:blank",
+                title="Bad Request",
+                status=400,
+                detail=str(e),
+                instance="/snaps"
+            ).dict()
+        )
     
     except HTTPException as e:
         return JSONResponse(
@@ -59,8 +70,10 @@ async def create_snap(snap: SnapMsgCreate, db: Session = Depends(get_db)):
 
 @router.get("/snaps", response_model=SnapMsgList, responses={500: {"model": ErrorResponse}})
 async def get_snaps(db: Session = Depends(get_db)):
+    logger.info("Received request to get all snaps")
     try:
         snaps = db.query(SnapMsg).all()
+        logger.info(f"Retrieved {len(snaps)} snaps from database")
         return SnapMsgList(data=[SnapMsgBase.from_orm(snap) for snap in snaps])
     
     except Exception as e:

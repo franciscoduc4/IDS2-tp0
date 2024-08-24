@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 from typing import List, Optional, Literal
 
 class SnapMsgBase(BaseModel):
@@ -10,7 +10,7 @@ class SnapMsgBase(BaseModel):
 
 
 class SnapMsgCreate(BaseModel):
-    message: str
+    message: str = Field(..., max_length=280)
 
 
 class SnapMsgList(BaseModel):
