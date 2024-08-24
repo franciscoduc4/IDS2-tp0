@@ -1,8 +1,10 @@
 from pydantic import BaseModel, Field, constr
 from typing import List, Optional, Literal
+from uuid import UUID
 
 class SnapMsgBase(BaseModel):
     id: int
+    uuid: UUID
     message: str
 
     class Config:

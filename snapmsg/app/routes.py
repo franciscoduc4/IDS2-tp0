@@ -27,7 +27,7 @@ async def create_snap(snap: SnapMsgCreate, db: Session = Depends(get_db)):
         db.add(new_snap)
         db.commit()
         db.refresh(new_snap)
-        return SnapMsgResponse(data=SnapMsgBase.from_orm(new_snap))  # Returns 201 by default due to the status_code above
+        return SnapMsgResponse(data=SnapMsgBase.from_orm(new_snap))
     
     except ValidationError as e:
         logger.error(f"Validation error: {e}")
@@ -66,7 +66,6 @@ async def create_snap(snap: SnapMsgCreate, db: Session = Depends(get_db)):
                 instance="/snaps"
             ).dict()
         )
-    
 
 @router.get("/snaps", response_model=SnapMsgList, responses={500: {"model": ErrorResponse}})
 async def get_snaps(db: Session = Depends(get_db)):
@@ -86,5 +85,44 @@ async def get_snaps(db: Session = Depends(get_db)):
                 status=500,
                 detail=str(e),
                 instance="/snaps"
+            ).dict()
+        )
+
+
+@router.get("/snaps/{uuid}", response_model=SnapMsgResponse, responses={
+    404: {"description": "Snap not found", "model": ErrorResponse},
+    500: {"description": "Internal server error", "model": ErrorResponse}
+})
+async def get_snap_by_uuid(uuid: str, db: Session = Depends(get_db)):
+    logger.info(f"Received request to get snap with UUID: {uuid}")
+    try:
+        snap = db.query(SnapMsg).filter(SnapMsg.uuid == uuid).first()
+        if snap is None:
+            logger.warning(f"Snap with UUID {uuid} not found")
+            raise HTTPException(status_code=404, detail="Snap not found")
+        return SnapMsgResponse(data=SnapMsgBase.from_orm(snap))
+    
+    except HTTPException as e:
+        return JSONResponse(
+            status_code=e.status_code,
+            content=ErrorResponse(
+                type="about:blank",
+                title=e.detail,
+                status=e.status_code,
+                detail=str(e.detail),
+                instance=f"/snaps/{uuid}"
+            ).dict()
+        )
+    
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        return JSONResponse(
+            status_code=500,
+            content=ErrorResponse(
+                type="about:blank",
+                title="Internal Server Error",
+                status=500,
+                detail=str(e),
+                instance=f"/snaps/{uuid}"
             ).dict()
         )
