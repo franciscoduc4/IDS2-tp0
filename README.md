@@ -36,3 +36,9 @@ Para ejecutar los tests, utiliza el siguiente comando de docker:
 ```bash
 docker-compose up --build test
 ```	
+
+## Posibles Mejoras (desafio opcional)
+
+- Implementar WebSockets para que los usuarios reciban mensajes instantáneamente sin necesidad de hacer polling y se reduzca el tiempo de espera para recibir mensajes y actualizaciones.
+- Optimizar la API con algun balanceador de cargas para distribuir el trafico, o implementar caching para reducir el tiempo de respuesta en la base de datos.
+- Sistema de Monitoreo, podria usar herramientas como Prometheus y Grafana para monitorear el rendimiento y la disponibilidad de la API y ademas integrar herramientas de analisis para recoger datos sobre el uso de la API y el comportamiento de los usuarios.
