@@ -21,26 +21,26 @@ async def create_snap(snap: SnapMsgCreate, db: Session = Depends(get_db)):
     db.add(new_snap)
     db.commit()
     db.refresh(new_snap)
-    return SnapMsgResponse(data=SnapMsgBase.from_orm(new_snap))
+    return SnapMsgResponse(data=SnapMsgBase.model_validate(new_snap))
 
 @router.get("/snaps", response_model=SnapMsgList)
 async def get_snaps(db: Session = Depends(get_db)):
     snaps = db.query(SnapMsg).all()
-    return SnapMsgList(data=[SnapMsgBase.from_orm(snap) for snap in snaps])
+    return SnapMsgList(data=[SnapMsgBase.model_validate(snap) for snap in snaps])
 
 @router.get("/snaps/{uuid}", response_model=SnapMsgResponse)
 async def get_snap_by_uuid(uuid: str, db: Session = Depends(get_db)):
     snap = db.query(SnapMsg).filter(SnapMsg.uuid == uuid).first()
     if snap is None:
         raise HTTPException(status_code=404, detail="Snap not found")
-    return SnapMsgResponse(data=SnapMsgBase.from_orm(snap))
+    return SnapMsgResponse(data=SnapMsgBase.model_validate(snap))
 
 @router.get("/snaps/{id}", response_model=SnapMsgResponse)
 async def get_snap_by_id(id: int, db: Session = Depends(get_db)):
     snap = db.query(SnapMsg).filter(SnapMsg.id == id).first()
     if snap is None:
         raise HTTPException(status_code=404, detail="Snap not found")
-    return SnapMsgResponse(data=SnapMsgBase.from_orm(snap))
+    return SnapMsgResponse(data=SnapMsgBase.model_validate(snap))
 
 @router.delete("/snaps/{id}", responses={
     204: {"description": "Snap deleted successfully"},

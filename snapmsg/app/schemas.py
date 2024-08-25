@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel, Field, constr, ConfigDict
 from typing import List, Optional, Literal
 from uuid import UUID
 
@@ -7,21 +7,16 @@ class SnapMsgBase(BaseModel):
     uuid: UUID
     message: str
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 class SnapMsgCreate(BaseModel):
     message: str = Field(..., max_length=280)
 
-
 class SnapMsgList(BaseModel):
     data: List[SnapMsgBase]
 
-
 class SnapMsgResponse(BaseModel):
     data: SnapMsgBase
-
 
 class ErrorResponse(BaseModel):
     type: Literal["about:blank"] = Field(default="about:blank")

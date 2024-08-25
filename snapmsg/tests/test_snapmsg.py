@@ -1,27 +1,27 @@
 import pytest
 from httpx import AsyncClient
-from httpx import ASGITransport
+from httpx._transports.asgi import ASGITransport  
 from app.main import app
 from app.database import SessionLocal, SnapMsg, init_db
 import uuid
 
 @pytest.mark.asyncio
 async def test_create_snap():
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post("/snaps", json={"message": "Hello!"})
     assert response.status_code == 201
     assert response.json()["data"]["message"] == "Hello!"
 
 @pytest.mark.asyncio
 async def test_get_snaps():
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get("/snaps")
     assert response.status_code == 200
     assert isinstance(response.json()["data"], list)
 
 @pytest.mark.asyncio
 async def test_create_snap_length_validation():
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         long_message = "a" * 281  
         response = await client.post("/snaps", json={"message": long_message})
         assert response.status_code == 400  
@@ -40,27 +40,24 @@ async def test_create_snap_length_validation():
             "instance": "http://test/snaps"
         }
 
-
 @pytest.fixture(scope="module")
 async def setup_db():
-    # Inicializa la base de datos antes de ejecutar las pruebas
     init_db()
     yield
-    # Aquí puedes agregar cualquier limpieza después de las pruebas si es necesario
 
 @pytest.mark.asyncio
 async def test_create_snap_uuid(setup_db):
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post("/snaps", json={"message": "Test message"})
     
     assert response.status_code == 201
-    data = response.json()["data"]  # Accede a 'data' primero
+    data = response.json()["data"]  
     assert "uuid" in data
-    assert uuid.UUID(data["uuid"])  # Verifica que el UUID es válido
+    assert uuid.UUID(data["uuid"]) 
 
 @pytest.mark.asyncio
 async def test_get_snap_by_uuid(setup_db):
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         create_response = await ac.post("/snaps", json={"message": "Test message"})
         created_snap = create_response.json()["data"]
         uuid = created_snap["uuid"]
@@ -72,7 +69,7 @@ async def test_get_snap_by_uuid(setup_db):
 
 @pytest.mark.asyncio
 async def test_create_snap_uuid_uniqueness(setup_db):
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response1 = await ac.post("/snaps", json={"message": "First message"})
         response2 = await ac.post("/snaps", json={"message": "Second message"})
 
@@ -84,10 +81,9 @@ async def test_create_snap_uuid_uniqueness(setup_db):
 
         assert data1["uuid"] != data2["uuid"]
 
-
 @pytest.mark.asyncio
 async def test_delete_snap_by_id(setup_db):
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         create_response = await ac.post("/snaps", json={"message": "Test message"})
         created_snap = create_response.json()["data"]
         snap_id = created_snap["id"]
@@ -96,6 +92,5 @@ async def test_delete_snap_by_id(setup_db):
 
         assert delete_response.status_code == 204
 
-        # Verify the snap is deleted
         get_response = await ac.get(f"/snaps/{snap_id}")
         assert get_response.status_code == 404
