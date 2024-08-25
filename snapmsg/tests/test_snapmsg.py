@@ -7,11 +7,17 @@ import uuid
 
 @pytest.fixture(scope="module")
 async def setup_db():
+    """
+    Fixture to initialize the database before running tests.
+    """
     init_db()
     yield
 
 @pytest.mark.asyncio
 async def test_create_snap(setup_db):
+    """
+    Test creating a new snap message.
+    """
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post("/snaps", json={"message": "Hello!"})
     assert response.status_code == 201
@@ -19,6 +25,9 @@ async def test_create_snap(setup_db):
 
 @pytest.mark.asyncio
 async def test_get_snaps(setup_db):
+    """
+    Test retrieving all snap messages.
+    """
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get("/snaps")
     assert response.status_code == 200
@@ -26,6 +35,9 @@ async def test_get_snaps(setup_db):
 
 @pytest.mark.asyncio
 async def test_create_snap_length_validation(setup_db):
+    """
+    Test validation of snap message length (should not exceed 280 characters).
+    """
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         long_message = "a" * 281  
         response = await client.post("/snaps", json={"message": long_message})
@@ -47,6 +59,9 @@ async def test_create_snap_length_validation(setup_db):
 
 @pytest.mark.asyncio
 async def test_create_snap_id(setup_db):
+    """
+    Test that a new snap message is assigned a valid UUID.
+    """
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.post("/snaps", json={"message": "Test message"})
     
@@ -57,6 +72,9 @@ async def test_create_snap_id(setup_db):
 
 @pytest.mark.asyncio
 async def test_get_snap_by_id(setup_db):
+    """
+    Test retrieving a specific snap message by its ID.
+    """
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         create_response = await ac.post("/snaps", json={"message": "Test message"})
         created_snap = create_response.json()["data"]
@@ -69,6 +87,9 @@ async def test_get_snap_by_id(setup_db):
 
 @pytest.mark.asyncio
 async def test_create_snap_id_uniqueness(setup_db):
+    """
+    Test that each new snap message is assigned a unique ID.
+    """
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response1 = await ac.post("/snaps", json={"message": "First message"})
         response2 = await ac.post("/snaps", json={"message": "Second message"})
@@ -83,6 +104,9 @@ async def test_create_snap_id_uniqueness(setup_db):
 
 @pytest.mark.asyncio
 async def test_delete_snap_by_id(setup_db):
+    """
+    Test deleting a snap message by its ID.
+    """
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         create_response = await ac.post("/snaps", json={"message": "Test message"})
         created_snap = create_response.json()["data"]
