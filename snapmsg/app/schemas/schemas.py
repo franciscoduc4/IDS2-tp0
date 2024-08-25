@@ -3,8 +3,7 @@ from typing import List, Optional, Literal
 from uuid import UUID
 
 class SnapMsgBase(BaseModel):
-    id: int
-    uuid: UUID
+    id: UUID
     message: str
 
     model_config = ConfigDict(from_attributes=True)

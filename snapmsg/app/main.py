@@ -2,19 +2,18 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from app.routes import router
+from app.controllers.controller import router  
 from app.logging_config import setup_logging
-from app.config import Config
-from app.database import init_db
-
+from app.config.config import Config
+from app.database import init_db  
+from app.models.model import SnapMsg  
+from app.database import get_db  
 setup_logging()
 
 app = FastAPI()
 
-# Initialize the database
 init_db()
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,7 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routes
 app.include_router(router)
 
 @app.middleware("http")

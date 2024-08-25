@@ -17,14 +17,8 @@ else:
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-class SnapMsg(Base):
-    __tablename__ = "snapmsgs"
-
-    id = Column(Integer, primary_key=True, index=True)
-    message = Column(String, index=True)
-    uuid = Column(String, unique=True, default=lambda: str(uuid.uuid4()))  # Use String for SQLite
-
 def init_db():
+    Base.metadata.drop_all(bind=engine)  
     Base.metadata.create_all(bind=engine)
 
 def get_db():
